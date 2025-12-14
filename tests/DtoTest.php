@@ -6,6 +6,8 @@ namespace TapPay\Payment\Tests;
 
 use PHPUnit\Framework\TestCase;
 use TapPay\Payment\ClientConfig;
+use TapPay\Payment\Enum\Currency;
+use TapPay\Payment\Enum\TapPayEnvironment;
 use TapPay\Payment\Dto\Cardholder;
 use TapPay\Payment\Dto\Money;
 use TapPay\Payment\Dto\PaymentResponse;
@@ -179,6 +181,14 @@ final class DtoTest extends TestCase
         $this->assertSame('GBP', $money->getCurrency());
     }
 
+    public function testMoneyOfAcceptsCurrencyEnum(): void
+    {
+        $money = Money::of(10.99, Currency::USD);
+
+        $this->assertSame(1099, $money->toApiAmount());
+        $this->assertSame('USD', $money->getCurrency());
+    }
+
     public function testMoneyNegativeThrows(): void
     {
         $this->expectException(ValidationException::class);
@@ -218,6 +228,30 @@ final class DtoTest extends TestCase
         $money = Money::USD(19.99);
 
         $this->assertSame('USD 19.99', (string) $money);
+    }
+
+    public function testPrimePaymentRequestAcceptsCurrencyEnum(): void
+    {
+        $config = new ClientConfig(partnerKey: 'pk_test', merchantId: 'merchantA');
+
+        $payload = (new PrimePaymentRequest(
+            prime: 'prime_token',
+            amount: 100,
+            currency: Currency::USD
+        ))->toPayload($config);
+
+        $this->assertSame('USD', $payload['currency']);
+    }
+
+    public function testClientConfigForEnvironmentSetsBaseUri(): void
+    {
+        $config = ClientConfig::forEnvironment(
+            TapPayEnvironment::Production,
+            partnerKey: 'pk_test',
+            merchantId: 'merchantA'
+        );
+
+        $this->assertSame('https://prod.tappaysdk.com', $config->baseUri());
     }
 
     // =====================

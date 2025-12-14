@@ -26,7 +26,7 @@ Supported operations:
 
 ### Amount & Currency (`Money`)
 
-Request DTOs accept `int|Money $amount`.
+Request DTOs accept `int|Money $amount` and `Currency|string|null $currency`.
 
 - If you pass an `int`, the value is sent as-is to TapPay and `currency` defaults to `TWD`.
 - If you pass a `Money`, the library derives both API `amount` and `currency` from it.
@@ -34,12 +34,24 @@ Request DTOs accept `int|Money $amount`.
 Example:
 
 ```php
+use TapPay\Payment\Enum\Currency;
 use TapPay\Payment\Dto\Money;
 use TapPay\Payment\Dto\PrimePaymentRequest;
 
 $request = new PrimePaymentRequest(
     prime: 'prime_from_frontend',
     amount: Money::USD(10.99),
+    details: 'Order #12345'
+);
+```
+
+If you don't want `Money`, you can also pass a `Currency` enum:
+
+```php
+$request = new PrimePaymentRequest(
+    prime: 'prime_from_frontend',
+    amount: 100,
+    currency: Currency::TWD,
     details: 'Order #12345'
 );
 ```
@@ -65,4 +77,3 @@ The library uses `TapPay\Payment\Http\HttpClientInterface`.
 - `TapPay\Payment\Exception\ValidationException`: request DTO validation failures
 - `TapPay\Payment\Exception\SignatureException`: TapPay rejected `x-api-key` (HTTP 401/403)
 - `TapPay\Payment\Exception\HttpException`: transport errors, HTTP errors, or invalid responses
-

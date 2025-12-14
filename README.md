@@ -51,6 +51,19 @@ $client = new TapPayClient(new ClientConfig(
 ));
 ```
 
+### Optional: Use Environment Enum
+
+```php
+use TapPay\Payment\ClientConfig;
+use TapPay\Payment\Enum\TapPayEnvironment;
+
+$config = ClientConfig::forEnvironment(
+    TapPayEnvironment::Sandbox,
+    partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+    merchantId: getenv('TAPPAY_MERCHANT_ID')
+);
+```
+
 ### Optional: Use cURL HTTP Client
 
 ```php

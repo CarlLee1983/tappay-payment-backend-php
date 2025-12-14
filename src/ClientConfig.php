@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TapPay\Payment;
 
+use TapPay\Payment\Enum\TapPayEnvironment;
 use TapPay\Payment\Exception\ValidationException;
 
 /**
@@ -29,6 +30,23 @@ final class ClientConfig
     ) {
         $this->baseUri = rtrim($baseUri, '/');
         $this->validate();
+    }
+
+    /**
+     * Create a config for a built-in TapPay environment.
+     *
+     * @throws ValidationException
+     */
+    public static function forEnvironment(
+        TapPayEnvironment $environment,
+        string $partnerKey,
+        string $merchantId
+    ): self {
+        return new self(
+            partnerKey: $partnerKey,
+            merchantId: $merchantId,
+            baseUri: $environment->baseUri()
+        );
     }
 
     /**

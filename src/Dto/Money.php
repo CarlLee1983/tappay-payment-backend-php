@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TapPay\Payment\Dto;
 
+use TapPay\Payment\Enum\Currency;
 use TapPay\Payment\Exception\ValidationException;
 
 /**
@@ -22,16 +23,20 @@ final class Money
 
     /**
      * @param int|float $amount The amount in the currency's natural unit.
-     * @param string $currency ISO 4217 currency code (default: TWD).
+     * @param Currency|string $currency ISO 4217 currency code (default: TWD).
      */
     public function __construct(
         private readonly int|float $amount,
-        private readonly string $currency = 'TWD'
+        Currency|string $currency = 'TWD'
     ) {
+        $this->currency = Currency::normalize($currency);
+
         if ($this->amount < 0) {
             throw new ValidationException('Amount cannot be negative.');
         }
     }
+
+    private readonly string $currency;
 
     /**
      * Create a Money instance in TWD.
@@ -73,11 +78,11 @@ final class Money
      * Create a Money instance in any currency.
      *
      * @param float|int $amount Amount in the currency's natural unit.
-     * @param string $currency ISO 4217 currency code.
+     * @param Currency|string $currency ISO 4217 currency code.
      */
-    public static function of(float|int $amount, string $currency): self
+    public static function of(float|int $amount, Currency|string $currency): self
     {
-        return new self($amount, strtoupper($currency));
+        return new self($amount, $currency);
     }
 
     /**

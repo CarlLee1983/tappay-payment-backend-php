@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TapPay\Payment\Dto;
 
 use TapPay\Payment\ClientConfig;
+use TapPay\Payment\Enum\Currency;
 use TapPay\Payment\Exception\ValidationException;
 
 /**
@@ -18,7 +19,7 @@ final class PrimePaymentRequest
     /**
      * @param string $prime The prime string obtained from the frontend.
      * @param int|Money $amount Payment amount (int for TWD, or Money for other currencies).
-     * @param string|null $currency Currency code (default: 'TWD'). Ignored if $amount is Money.
+     * @param Currency|string|null $currency Currency code (default: 'TWD'). Ignored if $amount is Money.
      * @param string|null $details Transaction details/description.
      * @param string|null $orderNumber Merchant's order number.
      * @param string|null $bankTransactionId Bank transaction ID (if any).
@@ -34,7 +35,7 @@ final class PrimePaymentRequest
     public function __construct(
         public readonly string $prime,
         public readonly int|Money $amount,
-        public readonly ?string $currency = null,
+        public readonly Currency|string|null $currency = null,
         public readonly ?string $details = null,
         public readonly ?string $orderNumber = null,
         public readonly ?string $bankTransactionId = null,

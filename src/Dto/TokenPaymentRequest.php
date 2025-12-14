@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace TapPay\Payment\Dto;
 
 use TapPay\Payment\ClientConfig;
+use TapPay\Payment\Enum\Currency;
 use TapPay\Payment\Exception\ValidationException;
 
 /**
@@ -19,7 +20,7 @@ final class TokenPaymentRequest
      * @param string $cardKey The card key (obtained from Pay by Prime with remember: true).
      * @param string $cardToken The card token (obtained from Pay by Prime with remember: true).
      * @param int|Money $amount Payment amount (int for TWD, or Money for other currencies).
-     * @param string|null $currency Currency code (default: 'TWD'). Ignored if $amount is Money.
+     * @param Currency|string|null $currency Currency code (default: 'TWD'). Ignored if $amount is Money.
      * @param string|null $details Transaction details/description.
      * @param string|null $orderNumber Merchant's order number.
      * @param string|null $bankTransactionId Bank transaction ID (if any).
@@ -32,7 +33,7 @@ final class TokenPaymentRequest
         public readonly string $cardKey,
         public readonly string $cardToken,
         public readonly int|Money $amount,
-        public readonly ?string $currency = null,
+        public readonly Currency|string|null $currency = null,
         public readonly ?string $details = null,
         public readonly ?string $orderNumber = null,
         public readonly ?string $bankTransactionId = null,

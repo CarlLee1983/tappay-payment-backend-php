@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TapPay\Payment\Dto;
 
+use TapPay\Payment\Enum\Currency;
 use TapPay\Payment\Exception\ValidationException;
 
 /**
@@ -14,7 +15,7 @@ final class Payload
     /**
      * @return array{amount:int, currency:string}
      */
-    public static function resolveAmountAndCurrency(int|Money $amount, ?string $currency): array
+    public static function resolveAmountAndCurrency(int|Money $amount, Currency|string|null $currency): array
     {
         if ($amount instanceof Money) {
             return [
@@ -25,7 +26,7 @@ final class Payload
 
         return [
             'amount' => $amount,
-            'currency' => $currency ?? 'TWD',
+            'currency' => $currency instanceof Currency ? $currency->value : ($currency ?? 'TWD'),
         ];
     }
 
@@ -86,4 +87,3 @@ final class Payload
         });
     }
 }
-
