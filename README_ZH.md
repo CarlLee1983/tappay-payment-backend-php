@@ -21,6 +21,7 @@
 
 - PHP 8.1 或更高版本
 - ext-json
+- （選用）使用 `CurlHttpClient` 需要 ext-curl
 
 ## 安裝
 
@@ -35,7 +36,6 @@ composer require carllee1983/tappay-payment-backend
 ```php
 use TapPay\Payment\ClientConfig;
 use TapPay\Payment\TapPayClient;
-use TapPay\Payment\Http\CurlHttpClient;
 
 // Sandbox 環境（預設）
 $client = new TapPayClient(new ClientConfig(
@@ -43,7 +43,21 @@ $client = new TapPayClient(new ClientConfig(
     merchantId: getenv('TAPPAY_MERCHANT_ID')
 ));
 
-// 選用：使用 cURL HTTP 客戶端（需要 ext-curl）
+// 正式環境
+$client = new TapPayClient(new ClientConfig(
+    partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+    merchantId: getenv('TAPPAY_MERCHANT_ID'),
+    baseUri: 'https://prod.tappaysdk.com'
+));
+```
+
+### 選用：使用 cURL HTTP 客戶端
+
+```php
+use TapPay\Payment\ClientConfig;
+use TapPay\Payment\TapPayClient;
+use TapPay\Payment\Http\CurlHttpClient;
+
 $client = new TapPayClient(
     new ClientConfig(
         partnerKey: getenv('TAPPAY_PARTNER_KEY'),
@@ -51,13 +65,29 @@ $client = new TapPayClient(
     ),
     new CurlHttpClient()
 );
+```
 
-// 正式環境
-$client = new TapPayClient(new ClientConfig(
-    partnerKey: getenv('TAPPAY_PARTNER_KEY'),
-    merchantId: getenv('TAPPAY_MERCHANT_ID'),
-    baseUri: 'https://prod.tappaysdk.com'
-));
+### 選用：使用 PSR-18 HTTP 客戶端
+
+```php
+use TapPay\Payment\ClientConfig;
+use TapPay\Payment\TapPayClient;
+use TapPay\Payment\Http\Psr18HttpClientAdapter;
+
+// 需要 PSR-18 + PSR-17 + PSR-7 實作，例如：
+// composer require psr/http-client psr/http-factory nyholm/psr7
+
+$psr18Client = /* \Psr\Http\Client\ClientInterface */;
+$requestFactory = /* \Psr\Http\Message\RequestFactoryInterface */;
+$streamFactory = /* \Psr\Http\Message\StreamFactoryInterface */;
+
+$client = new TapPayClient(
+    new ClientConfig(
+        partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+        merchantId: getenv('TAPPAY_MERCHANT_ID')
+    ),
+    new Psr18HttpClientAdapter($psr18Client, $requestFactory, $streamFactory)
+);
 ```
 
 ## HTTP 客戶端選項
@@ -71,6 +101,7 @@ $client = new TapPayClient(new ClientConfig(
 使用前端 TapPay SDK 取得的 Prime token 進行付款：
 
 ```php
+use TapPay\Payment\Dto\Money;
 use TapPay\Payment\Dto\PrimePaymentRequest;
 
 $response = $client->payByPrime(new PrimePaymentRequest(
@@ -95,6 +126,16 @@ if ($response->isSuccess()) {
     $cardKey = $response->cardSecret['card_key'] ?? null;
     $cardToken = $response->cardSecret['card_token'] ?? null;
 }
+```
+
+小提示：若是非 TWD 幣別，建議用 `Money` 以避免自行換算：
+
+```php
+$response = $client->payByPrime(new PrimePaymentRequest(
+    prime: 'prime_from_frontend',
+    amount: Money::USD(10.99),
+    details: '訂單 #12345'
+));
 ```
 
 ### Pay by Token
@@ -186,13 +227,15 @@ foreach ($response->tradeRecords as $record) {
 | 屬性 | 型別 | 必填 | 說明 |
 |------|------|------|------|
 | `prime` | string | 是 | 前端取得的 Prime token |
-| `amount` | int | 是 | 付款金額 |
+| `amount` | int\|Money | 是 | 付款金額（使用 `Money` 時會忽略 `currency`） |
 | `currency` | string | 否 | 幣別代碼（預設：TWD） |
 | `details` | string | 否 | 交易說明 |
 | `orderNumber` | string | 否 | 商家訂單編號 |
+| `bankTransactionId` | string | 否 | 銀行端訂單編號 |
 | `cardholder` | array | 否 | 持卡人資訊 |
 | `remember` | bool | 否 | 儲存卡片供未來使用 |
 | `instalment` | int | 否 | 分期期數 |
+| `delayCaptureInDays` | int | 否 | 延後請款天數 |
 | `threeDomainSecure` | bool | 否 | 啟用 3D 驗證 |
 | `resultUrl` | array | 否 | 3D 驗證結果 URL |
 
@@ -202,10 +245,12 @@ foreach ($response->tradeRecords as $record) {
 |------|------|------|------|
 | `cardKey` | string | 是 | 先前付款取得的 card key |
 | `cardToken` | string | 是 | 先前付款取得的 card token |
-| `amount` | int | 是 | 付款金額 |
-| `currency` | string | 是 | 幣別代碼 |
+| `amount` | int\|Money | 是 | 付款金額（使用 `Money` 時會忽略 `currency`） |
+| `currency` | string | 否 | 幣別代碼（預設：TWD） |
 | `details` | string | 否 | 交易說明 |
 | `orderNumber` | string | 否 | 商家訂單編號 |
+| `threeDomainSecure` | bool | 否 | 啟用 3D 驗證 |
+| `resultUrl` | array | 否 | 3D 驗證結果 URL |
 
 ### 例外類別
 
@@ -274,7 +319,7 @@ composer test
 
 ## 文件
 
-詳細 API 參考，請參閱 [doc/API/README.md](./doc/API/README.md)。
+函式庫 API 概覽，請參閱 [doc/API/README.md](./doc/API/README.md)。
 
 ## 貢獻
 

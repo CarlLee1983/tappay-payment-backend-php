@@ -21,6 +21,7 @@ A type-safe, PSR-4 compliant PHP library for TapPay Backend Payment APIs. Suppor
 
 - PHP 8.1 or higher
 - ext-json
+- (Optional) ext-curl for `CurlHttpClient`
 
 ## Installation
 
@@ -35,22 +36,12 @@ composer require carllee1983/tappay-payment-backend
 ```php
 use TapPay\Payment\ClientConfig;
 use TapPay\Payment\TapPayClient;
-use TapPay\Payment\Http\CurlHttpClient;
 
 // Sandbox environment (default)
 $client = new TapPayClient(new ClientConfig(
     partnerKey: getenv('TAPPAY_PARTNER_KEY'),
     merchantId: getenv('TAPPAY_MERCHANT_ID')
 ));
-
-// Optional: use cURL HTTP client (requires ext-curl)
-$client = new TapPayClient(
-    new ClientConfig(
-        partnerKey: getenv('TAPPAY_PARTNER_KEY'),
-        merchantId: getenv('TAPPAY_MERCHANT_ID')
-    ),
-    new CurlHttpClient()
-);
 
 // Production environment
 $client = new TapPayClient(new ClientConfig(
@@ -60,11 +51,51 @@ $client = new TapPayClient(new ClientConfig(
 ));
 ```
 
+### Optional: Use cURL HTTP Client
+
+```php
+use TapPay\Payment\ClientConfig;
+use TapPay\Payment\TapPayClient;
+use TapPay\Payment\Http\CurlHttpClient;
+
+$client = new TapPayClient(
+    new ClientConfig(
+        partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+        merchantId: getenv('TAPPAY_MERCHANT_ID')
+    ),
+    new CurlHttpClient()
+);
+```
+
+### Optional: Use PSR-18 HTTP Client
+
+```php
+use TapPay\Payment\ClientConfig;
+use TapPay\Payment\TapPayClient;
+use TapPay\Payment\Http\Psr18HttpClientAdapter;
+
+// Requires PSR-18 + PSR-17 + a PSR-7 implementation, e.g.:
+// composer require psr/http-client psr/http-factory nyholm/psr7
+
+$psr18Client = /* \Psr\Http\Client\ClientInterface */;
+$requestFactory = /* \Psr\Http\Message\RequestFactoryInterface */;
+$streamFactory = /* \Psr\Http\Message\StreamFactoryInterface */;
+
+$client = new TapPayClient(
+    new ClientConfig(
+        partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+        merchantId: getenv('TAPPAY_MERCHANT_ID')
+    ),
+    new Psr18HttpClientAdapter($psr18Client, $requestFactory, $streamFactory)
+);
+```
+
 ### Pay by Prime
 
 Process a payment using a Prime token from the TapPay frontend SDK:
 
 ```php
+use TapPay\Payment\Dto\Money;
 use TapPay\Payment\Dto\PrimePaymentRequest;
 
 $response = $client->payByPrime(new PrimePaymentRequest(
@@ -89,6 +120,16 @@ if ($response->isSuccess()) {
     $cardKey = $response->cardSecret['card_key'] ?? null;
     $cardToken = $response->cardSecret['card_token'] ?? null;
 }
+```
+
+Tip: for non-TWD currencies, pass a `Money` object to avoid manual conversion:
+
+```php
+$response = $client->payByPrime(new PrimePaymentRequest(
+    prime: 'prime_from_frontend',
+    amount: Money::USD(10.99),
+    details: 'Order #12345'
+));
 ```
 
 ### Pay by Token
@@ -180,13 +221,15 @@ foreach ($response->tradeRecords as $record) {
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
 | `prime` | string | Yes | Prime token from frontend |
-| `amount` | int | Yes | Payment amount |
+| `amount` | int\|Money | Yes | Payment amount (if `Money` is used, `currency` is ignored) |
 | `currency` | string | No | Currency code (default: TWD) |
 | `details` | string | No | Transaction description |
 | `orderNumber` | string | No | Merchant order number |
+| `bankTransactionId` | string | No | Bank transaction ID |
 | `cardholder` | array | No | Cardholder information |
 | `remember` | bool | No | Save card for future use |
 | `instalment` | int | No | Instalment period |
+| `delayCaptureInDays` | int | No | Days to delay capture |
 | `threeDomainSecure` | bool | No | Enable 3D Secure |
 | `resultUrl` | array | No | 3D Secure result URLs |
 
@@ -196,10 +239,12 @@ foreach ($response->tradeRecords as $record) {
 |----------|------|----------|-------------|
 | `cardKey` | string | Yes | Card key from previous payment |
 | `cardToken` | string | Yes | Card token from previous payment |
-| `amount` | int | Yes | Payment amount |
-| `currency` | string | Yes | Currency code |
+| `amount` | int\|Money | Yes | Payment amount (if `Money` is used, `currency` is ignored) |
+| `currency` | string | No | Currency code (default: TWD) |
 | `details` | string | No | Transaction description |
 | `orderNumber` | string | No | Merchant order number |
+| `threeDomainSecure` | bool | No | Enable 3D Secure |
+| `resultUrl` | array | No | 3D Secure result URLs |
 
 ### Exceptions
 
@@ -274,7 +319,7 @@ composer test
 
 ## Documentation
 
-For detailed API reference, see [doc/API/README.md](./doc/API/README.md).
+For a library-specific API overview, see [doc/API/README.md](./doc/API/README.md).
 
 ## Contributing
 
