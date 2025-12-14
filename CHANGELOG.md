@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-12-14
+
+### Added
+
+- `CurlHttpClient` (requires `ext-curl`) and `Psr18HttpClientAdapter` (optional PSR-18/PSR-17 support)
+- `TapPayEnvironment` and `Currency` enums for clearer, safer configuration and currency handling
+- `Payload` helper to centralize request payload building and filtering
+- GitHub Actions workflow to auto-create SemVer tags from PR merges
+
+### Changed
+
+- Improved JSON decode errors and HTTP connection error messages
+- Standardized request payload filtering across DTOs (filters `null`, empty strings, and empty arrays)
+
 ## [1.0.0] - 2024-12-13
 
 ### Added
@@ -47,5 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation for required fields
 - Type-safe implementation with PHP 8.1+ strict types
 
-[Unreleased]: https://github.com/CarlLee1983/tappay-backend-payment-php/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/CarlLee1983/tappay-backend-payment-php/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/CarlLee1983/tappay-backend-payment-php/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/CarlLee1983/tappay-backend-payment-php/releases/tag/v1.0.0
