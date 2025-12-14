@@ -45,6 +45,16 @@ final class PaymentResponse
      */
     public static function fromArray(array $data): self
     {
+        $cardSecret = null;
+        if (array_key_exists('card_secret', $data) && is_array($data['card_secret'])) {
+            $cardSecret = $data['card_secret'];
+        }
+
+        $cardInfo = null;
+        if (array_key_exists('card_info', $data) && is_array($data['card_info'])) {
+            $cardInfo = $data['card_info'];
+        }
+
         return new self(
             (int) ($data['status'] ?? -1),
             (string) ($data['msg'] ?? ''),
@@ -52,8 +62,8 @@ final class PaymentResponse
             $data['bank_transaction_id'] ?? null,
             $data['bank_order_number'] ?? null,
             $data['auth_code'] ?? null,
-            $data['card_secret'] ?? null,
-            $data['card_info'] ?? null,
+            $cardSecret,
+            $cardInfo,
             isset($data['amount']) ? (int) $data['amount'] : null,
             $data['currency'] ?? null,
             $data

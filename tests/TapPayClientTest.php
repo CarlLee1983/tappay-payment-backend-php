@@ -7,6 +7,7 @@ namespace TapPay\Payment\Tests;
 use PHPUnit\Framework\TestCase;
 use TapPay\Payment\ClientConfig;
 use TapPay\Payment\Dto\PrimePaymentRequest;
+use TapPay\Payment\Exception\HttpException;
 use TapPay\Payment\Exception\SignatureException;
 use TapPay\Payment\Http\HttpClientInterface;
 use TapPay\Payment\Http\HttpResponse;
@@ -71,6 +72,21 @@ final class TapPayClientTest extends TestCase
         $client = $this->makeClient($response);
 
         $this->expectException(SignatureException::class);
+        $client->payByPrime(new PrimePaymentRequest(
+            prime: 'prime_token',
+            amount: 100
+        ));
+    }
+
+    public function testInvalidJsonResponseThrowsHttpExceptionWithDetails(): void
+    {
+        $response = new HttpResponse(200, '{invalid json');
+
+        $client = $this->makeClient($response);
+
+        $this->expectException(HttpException::class);
+        $this->expectExceptionMessage('Unable to decode TapPay response');
+
         $client->payByPrime(new PrimePaymentRequest(
             prime: 'prime_token',
             amount: 100

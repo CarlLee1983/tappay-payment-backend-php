@@ -39,6 +39,11 @@ final class RecordQueryResponse
      */
     public static function fromArray(array $data): self
     {
+        $tradeRecords = [];
+        if (array_key_exists('trade_records', $data) && is_array($data['trade_records'])) {
+            $tradeRecords = $data['trade_records'];
+        }
+
         return new self(
             (int) ($data['status'] ?? -1),
             isset($data['msg']) ? (string) $data['msg'] : null,
@@ -46,7 +51,7 @@ final class RecordQueryResponse
             (int) ($data['page'] ?? 0),
             isset($data['total_page_count']) ? (int) $data['total_page_count'] : null,
             isset($data['number_of_transactions']) ? (int) $data['number_of_transactions'] : null,
-            $data['trade_records'] ?? [],
+            $tradeRecords,
             $data
         );
     }

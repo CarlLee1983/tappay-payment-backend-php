@@ -7,6 +7,8 @@ namespace TapPay\Payment\Tests;
 use PHPUnit\Framework\TestCase;
 use TapPay\Payment\Dto\Cardholder;
 use TapPay\Payment\Dto\Money;
+use TapPay\Payment\Dto\PaymentResponse;
+use TapPay\Payment\Dto\RecordQueryResponse;
 use TapPay\Payment\Dto\ResultUrl;
 use TapPay\Payment\Exception\ValidationException;
 
@@ -212,5 +214,36 @@ final class DtoTest extends TestCase
         $money = Money::USD(19.99);
 
         $this->assertSame('USD 19.99', (string) $money);
+    }
+
+    // =====================
+    // Response DTO Resilience Tests
+    // =====================
+
+    public function testPaymentResponseFromArrayIgnoresNonArrayCardFields(): void
+    {
+        $response = PaymentResponse::fromArray([
+            'status' => 0,
+            'msg' => 'success',
+            'card_secret' => 'not-an-array',
+            'card_info' => 123,
+        ]);
+
+        $this->assertTrue($response->isSuccess());
+        $this->assertNull($response->cardSecret);
+        $this->assertNull($response->cardInfo);
+    }
+
+    public function testRecordQueryResponseFromArrayIgnoresNonArrayTradeRecords(): void
+    {
+        $response = RecordQueryResponse::fromArray([
+            'status' => 0,
+            'records_per_page' => 50,
+            'page' => 0,
+            'trade_records' => 'not-an-array',
+        ]);
+
+        $this->assertTrue($response->isSuccess());
+        $this->assertSame([], $response->tradeRecords);
     }
 }

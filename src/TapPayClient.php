@@ -16,6 +16,7 @@ use TapPay\Payment\Exception\SignatureException;
 use TapPay\Payment\Http\HttpClientInterface;
 use TapPay\Payment\Http\HttpResponse;
 use TapPay\Payment\Http\NativeHttpClient;
+use JsonException;
 
 /**
  * TapPay Backend Payment API client.
@@ -149,11 +150,21 @@ final class TapPayClient
             );
         }
 
-        $decoded = json_decode($response->body, true);
+        try {
+            /** @var mixed $decoded */
+            $decoded = json_decode($response->body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            throw new HttpException(
+                sprintf('Unable to decode TapPay response: %s', $e->getMessage()),
+                $response->statusCode,
+                $response->body,
+                $e
+            );
+        }
 
         if (!is_array($decoded)) {
             throw new HttpException(
-                'Unable to decode TapPay response.',
+                'Unable to decode TapPay response: decoded JSON is not an object.',
                 $response->statusCode,
                 $response->body
             );

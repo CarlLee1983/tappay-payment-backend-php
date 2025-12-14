@@ -33,7 +33,9 @@ final class NativeHttpClient implements HttpClientInterface
         $raw = @file_get_contents($url, false, $context);
 
         if ($raw === false) {
-            throw new HttpException(sprintf('Failed to connect to %s', $url));
+            $error = error_get_last();
+            $detail = is_array($error) && isset($error['message']) ? (string) $error['message'] : 'unknown error';
+            throw new HttpException(sprintf('Failed to connect to %s: %s', $url, $detail));
         }
 
         $responseHeaders = $this->normalizeHeaders($http_response_header ?? []);
