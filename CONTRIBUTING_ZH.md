@@ -271,6 +271,26 @@ composer test
 - 記錄參數、回傳類型和例外
 - 在註解中包含使用範例
 
+## 發佈（Release）
+
+本專案使用 GitHub Actions，在 PR 合併到 `main` 後自動建立新的 SemVer tag。
+
+- 建立 tag：`.github/workflows/auto-tag.yml`
+- 建立 GitHub Release：`.github/workflows/release.yml`（tag push 後觸發）
+
+### 如何判斷要不要打 tag
+
+- 只有在推送的 commit 看起來是 PR 合併時才會打 tag（commit subject 含 `Merge pull request #123` 或 `(#123)`）。
+- 會掃描最新 `v*` tag 之後的 commit message，並依 Conventional Commits 決定版本升級：
+  - **major**：`type!: ...` 或 `BREAKING CHANGE`
+  - **minor**：`feat: ...`
+  - **patch**：`fix: ...` 或 `perf: ...`
+- 如果沒有任何版本升級訊號，就不會建立 tag。
+
+### 手動發佈
+
+若需要手動或 pre-release tag（例如 `v1.2.3-rc.1`），自行建立並 push tag；release workflow 會自動產生 GitHub Release。
+
 ## 有問題嗎？
 
 如果您對貢獻有疑問，歡迎：

@@ -341,6 +341,26 @@ public function payByPrime(PrimePaymentRequest $request): PaymentResponse
 }
 ```
 
+## Releasing
+
+This repo uses GitHub Actions to automatically create a new SemVer tag when a PR is merged into `main`.
+
+- Tag creation: `.github/workflows/auto-tag.yml`
+- GitHub Release creation: `.github/workflows/release.yml` (runs on tag push)
+
+### How it decides to tag
+
+- It only tags when the pushed commits look like a PR merge (commit subject contains `Merge pull request #123` or `(#123)`).
+- It scans commit messages since the latest `v*` tag and applies Conventional Commits rules:
+  - **major**: `type!: ...` or `BREAKING CHANGE`
+  - **minor**: `feat: ...`
+  - **patch**: `fix: ...` or `perf: ...`
+- If there is no version bump signal, no tag is created.
+
+### Manual releases
+
+If you need a manual or pre-release tag (e.g. `v1.2.3-rc.1`), create and push the tag; the release workflow will publish a GitHub Release for it.
+
 ## Questions?
 
 If you have questions about contributing, feel free to:
