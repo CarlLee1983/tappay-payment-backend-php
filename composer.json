@@ -1,0 +1,66 @@
+{
+  "name": "carllee1983/tappay-payment-backend",
+  "description": "Type-safe PHP 8.1+ library for TapPay Backend Payment APIs. Supports Pay by Prime, Pay by Token, Refund, and Record Query with injectable HTTP client for easy testing.",
+  "type": "library",
+  "keywords": [
+    "tappay",
+    "payment",
+    "payment-gateway",
+    "pay-by-prime",
+    "pay-by-token",
+    "refund",
+    "credit-card",
+    "taiwan",
+    "e-commerce",
+    "psr-4",
+    "php8"
+  ],
+  "homepage": "https://github.com/CarlLee1983/tappay-payment-backend-php",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Carl Lee",
+      "email": "carllee1983@gmail.com",
+      "homepage": "https://github.com/CarlLee1983",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/CarlLee1983/tappay-payment-backend-php/issues",
+    "source": "https://github.com/CarlLee1983/tappay-payment-backend-php",
+    "docs": "https://github.com/CarlLee1983/tappay-payment-backend-php#readme"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/CarlLee1983"
+    }
+  ],
+  "require": {
+    "php": "^8.1",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "TapPay\\Payment\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "TapPay\\Payment\\Tests\\": "tests/"
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "sort-packages": true,
+    "optimize-autoloader": true
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test:coverage": "phpunit --coverage-text"
+  }
+}
