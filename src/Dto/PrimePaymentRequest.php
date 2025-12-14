@@ -47,14 +47,9 @@ final class PrimePaymentRequest
         public readonly ?string $merchantId = null,
         public readonly ?string $partnerKey = null
     ) {
-        // Resolve amount and currency from Money object or primitives
-        if ($amount instanceof Money) {
-            $this->resolvedAmount = $amount->toApiAmount();
-            $this->resolvedCurrency = $amount->getCurrency();
-        } else {
-            $this->resolvedAmount = $amount;
-            $this->resolvedCurrency = $currency ?? 'TWD';
-        }
+        $resolved = Payload::resolveAmountAndCurrency($amount, $currency);
+        $this->resolvedAmount = $resolved['amount'];
+        $this->resolvedCurrency = $resolved['currency'];
     }
 
     /**
@@ -124,12 +119,8 @@ final class PrimePaymentRequest
         $cardholderPayload = $this->resolveCardholder();
 
         // Resolve result URL to payload format
-        $resultUrlPayload = $this->resolveResultUrl();
-
-        // Validate 3D Secure configuration
-        if ($this->threeDomainSecure === true && $resultUrlPayload === null) {
-            throw new ValidationException('result_url is required when three_domain_secure is enabled.');
-        }
+        $resultUrlPayload = Payload::resolveResultUrl($this->resultUrl);
+        Payload::validateThreeDomainSecure($this->threeDomainSecure, $resultUrlPayload);
 
         $payload = [
             'prime' => $this->prime,
@@ -148,10 +139,7 @@ final class PrimePaymentRequest
             'result_url' => $resultUrlPayload,
         ];
 
-        return array_filter(
-            $payload,
-            static fn($value) => $value !== null
-        );
+        return Payload::filter($payload);
     }
 
     /**
@@ -173,27 +161,5 @@ final class PrimePaymentRequest
         return Cardholder::fromArray($this->cardholder)->toPayload();
     }
 
-    /**
-     * Resolve result URL to API payload format.
-     *
-     * @return array<string, string>|null
-     * @throws ValidationException
-     */
-    private function resolveResultUrl(): ?array
-    {
-        if ($this->resultUrl === null) {
-            return null;
-        }
-
-        if ($this->resultUrl instanceof ResultUrl) {
-            $this->resultUrl->validate();
-            return $this->resultUrl->toPayload();
-        }
-
-        // Legacy array format - convert to ResultUrl and validate
-        $resultUrl = ResultUrl::fromArray($this->resultUrl);
-        $resultUrl->validate();
-        return $resultUrl->toPayload();
-    }
+    // Result URL resolution lives in Payload::resolveResultUrl().
 }
-

@@ -57,9 +57,6 @@ final class RefundRequest
             'bank_refund_id' => $this->bankRefundId,
         ];
 
-        return array_filter(
-            $payload,
-            static fn($value) => $value !== null
-        );
+        return Payload::filter($payload);
     }
 }

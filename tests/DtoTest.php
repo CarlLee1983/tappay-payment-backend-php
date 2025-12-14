@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace TapPay\Payment\Tests;
 
 use PHPUnit\Framework\TestCase;
+use TapPay\Payment\ClientConfig;
 use TapPay\Payment\Dto\Cardholder;
 use TapPay\Payment\Dto\Money;
 use TapPay\Payment\Dto\PaymentResponse;
+use TapPay\Payment\Dto\PrimePaymentRequest;
 use TapPay\Payment\Dto\RecordQueryResponse;
+use TapPay\Payment\Dto\RecordQueryRequest;
+use TapPay\Payment\Dto\RefundRequest;
 use TapPay\Payment\Dto\ResultUrl;
 use TapPay\Payment\Exception\ValidationException;
 
@@ -245,5 +249,50 @@ final class DtoTest extends TestCase
 
         $this->assertTrue($response->isSuccess());
         $this->assertSame([], $response->tradeRecords);
+    }
+
+    public function testRequestPayloadFiltersEmptyStringsButKeepsZero(): void
+    {
+        $config = new ClientConfig(partnerKey: 'pk_test', merchantId: 'merchantA');
+
+        $payload = (new PrimePaymentRequest(
+            prime: 'prime_token',
+            amount: 100,
+            details: '',
+            orderNumber: '   ',
+            delayCaptureInDays: 0
+        ))->toPayload($config);
+
+        $this->assertArrayNotHasKey('details', $payload);
+        $this->assertArrayNotHasKey('order_number', $payload);
+        $this->assertSame(0, $payload['delay_capture_in_days']);
+    }
+
+    public function testRefundRequestPayloadFiltersEmptyBankRefundId(): void
+    {
+        $config = new ClientConfig(partnerKey: 'pk_test', merchantId: 'merchantA');
+
+        $payload = (new RefundRequest(
+            recTradeId: 'tr_123',
+            bankRefundId: ''
+        ))->toPayload($config);
+
+        $this->assertArrayNotHasKey('bank_refund_id', $payload);
+    }
+
+    public function testRecordQueryRequestPayloadOmitsEmptyArrays(): void
+    {
+        $config = new ClientConfig(partnerKey: 'pk_test', merchantId: 'merchantA');
+
+        $payload = (new RecordQueryRequest(
+            recordsPerPage: 50,
+            page: 0,
+            filters: [],
+            orderBy: [],
+            merchantId: ''
+        ))->toPayload($config);
+
+        $this->assertArrayNotHasKey('filters', $payload);
+        $this->assertArrayNotHasKey('order_by', $payload);
     }
 }

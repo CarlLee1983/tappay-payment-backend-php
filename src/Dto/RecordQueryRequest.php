@@ -68,9 +68,6 @@ final class RecordQueryRequest
             'order_by' => $this->orderBy,
         ];
 
-        return array_filter(
-            $payload,
-            static fn($value) => $value !== null && $value !== []
-        );
+        return Payload::filter($payload);
     }
 }
