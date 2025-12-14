@@ -35,12 +35,22 @@ composer require carllee1983/tappay-payment-backend
 ```php
 use TapPay\Payment\ClientConfig;
 use TapPay\Payment\TapPayClient;
+use TapPay\Payment\Http\CurlHttpClient;
 
 // Sandbox 環境（預設）
 $client = new TapPayClient(new ClientConfig(
     partnerKey: getenv('TAPPAY_PARTNER_KEY'),
     merchantId: getenv('TAPPAY_MERCHANT_ID')
 ));
+
+// 選用：使用 cURL HTTP 客戶端（需要 ext-curl）
+$client = new TapPayClient(
+    new ClientConfig(
+        partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+        merchantId: getenv('TAPPAY_MERCHANT_ID')
+    ),
+    new CurlHttpClient()
+);
 
 // 正式環境
 $client = new TapPayClient(new ClientConfig(
@@ -49,6 +59,12 @@ $client = new TapPayClient(new ClientConfig(
     baseUri: 'https://prod.tappaysdk.com'
 ));
 ```
+
+## HTTP 客戶端選項
+
+- 預設：`TapPay\Payment\Http\NativeHttpClient`（stream-based，不需要額外 extension）
+- 選用：`TapPay\Payment\Http\CurlHttpClient`（需要 `ext-curl`）
+- 選用：`TapPay\Payment\Http\Psr18HttpClientAdapter`（需要 PSR-18 + PSR-17 + PSR-7 實作）
 
 ### Pay by Prime
 

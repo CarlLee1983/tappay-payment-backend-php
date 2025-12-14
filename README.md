@@ -35,12 +35,22 @@ composer require carllee1983/tappay-payment-backend
 ```php
 use TapPay\Payment\ClientConfig;
 use TapPay\Payment\TapPayClient;
+use TapPay\Payment\Http\CurlHttpClient;
 
 // Sandbox environment (default)
 $client = new TapPayClient(new ClientConfig(
     partnerKey: getenv('TAPPAY_PARTNER_KEY'),
     merchantId: getenv('TAPPAY_MERCHANT_ID')
 ));
+
+// Optional: use cURL HTTP client (requires ext-curl)
+$client = new TapPayClient(
+    new ClientConfig(
+        partnerKey: getenv('TAPPAY_PARTNER_KEY'),
+        merchantId: getenv('TAPPAY_MERCHANT_ID')
+    ),
+    new CurlHttpClient()
+);
 
 // Production environment
 $client = new TapPayClient(new ClientConfig(
@@ -248,6 +258,12 @@ $mockClient = new class implements HttpClientInterface {
 // Inject mock client for testing
 $client = new TapPayClient($config, $mockClient);
 ```
+
+## HTTP Client Options
+
+- Default: `TapPay\Payment\Http\NativeHttpClient` (stream-based, no extra extensions)
+- Optional: `TapPay\Payment\Http\CurlHttpClient` (requires `ext-curl`)
+- Optional: `TapPay\Payment\Http\Psr18HttpClientAdapter` (requires PSR-18 + PSR-17 + PSR-7 implementation)
 
 ## Running Tests
 
